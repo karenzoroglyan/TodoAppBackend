@@ -1,6 +1,9 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
+const debug = require("debug")("application"),
+  http = require("http"),
+  name = "myapp";
 const Database = require("./Database");
 
 const currentDir = path.resolve();
@@ -23,6 +26,22 @@ process.once("SIGINT", (code) => {
 const app = express();
 const port = 3001;
 app.use(express.json());
+
+const myLogger = function (req, res, next) {
+  let responeTimeBefore = new Date().getTime();
+  next();
+  let responeTimeAfter = new Date().getTime();
+  let responseTime = responeTimeAfter - responeTimeBefore;
+
+  debug("Request method: %s", req.method);
+  debug("Request path: %s", req.path);
+  debug("Request code: %s", res.statusCode);
+  debug("Response time: %s", responseTime);
+  debug("Request params: %O", req.params);
+  debug("Request body: %O", req.body);
+};
+
+app.use(myLogger);
 
 app.get("/todos", (req, res) => {
   res.send(database.findAll());
