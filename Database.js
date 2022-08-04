@@ -2,6 +2,7 @@ module.exports = class Database {
   constructor(todos) {
     this.data = todos;
   }
+
   findAll() {
     return this.data;
   }
@@ -11,7 +12,7 @@ module.exports = class Database {
   }
 
   update(id, text) {
-    this.data = this.data.map((item) => {
+    return this.data = this.data.map((item) => {
       if (item.id === id) {
         return { ...item, title: text };
       }

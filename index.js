@@ -1,4 +1,4 @@
-const express = require("express");
+const Hapi = require("@hapi/hapi");
 const path = require("path");
 const fs = require("fs");
 const debug = require("debug")("application"),
@@ -23,49 +23,84 @@ process.once("SIGINT", (code) => {
   process.exit();
 });
 
-const app = express();
-const port = 3001;
-app.use(express.json());
+const server = Hapi.server({
+  port: 3000,
+  host: "localhost",
+});
 
-const myLogger = function (req, res, next) {
-  let responeTimeBefore = new Date().getTime();
-  next();
-  let responeTimeAfter = new Date().getTime();
-  let responseTime = responeTimeAfter - responeTimeBefore;
+server.start();
 
-  debug("Request method: %s", req.method);
-  debug("Request path: %s", req.path);
-  debug("Request code: %s", res.statusCode);
-  debug("Response time: %s", responseTime);
-  debug("Request params: %O", req.params);
-  debug("Request body: %O", req.body);
+console.log("server start");
+
+const myLoggerPlugin = {
+  name: "myLoggerPlugin",
+  version: "1.0.0",
+  register: async function (server, options) {
+    server.ext("onPreResponse", function (request, h) {
+      let responeTimeBefore = new Date().getTime();
+      let responeTimeAfter = new Date().getTime();
+      let responseTime = responeTimeAfter - responeTimeBefore;
+
+      debug("Request method: %s", request.method);
+      debug("Request path: %s", request.path);
+      debug("Request code: %s", request.statusCode);
+      debug("Response time: %s", responseTime);
+      debug("Request params: %O", request.params);
+      debug("Request body: %O", request.payload);
+
+      return h.continue;
+    });
+  },
 };
 
-app.use(myLogger);
-
-app.get("/todos", (req, res) => {
-  res.send(database.findAll());
+server.register({
+  plugin: myLoggerPlugin,
 });
 
-app.get("/todos/:todoId", (req, res) => {
-  res.send(database.findById(req.params.todoId));
+server.route({
+  method: "GET",
+  path: "/todos",
+  handler: (request, h) => {
+    return database.findAll();
+  },
 });
 
-app.put("/todos/:todoId", (req, res) => {
-  res.send(database.update(req.params.todoId, req.body.text));
+server.route({
+  method: "GET",
+  path: "/todos/{todoId}",
+  handler: function (request, h) {
+    return database.findById(request.params.todoId);
+  },
 });
 
-app.delete("/todos/:todoId", (req, res) => {
-  res.send(database.delete(req.params.todoId));
+server.route({
+  method: "PUT",
+  path: "/todos/{todoId}",
+  handler: async (request, h) => {
+    const todoId = request.params.todoId;
+    const text = request.payload.text;
+
+    const result = database.update(todoId, text);
+
+    return result;
+  },
 });
 
-app.post("/todos", (req, res) => {
-  res.send(
-    database.create({
-      id: req.body.id,
-      title: req.body.title,
-    })
-  );
+server.route({
+  method: "DELETE",
+  path: "/todos/{todoId}",
+  handler: function (request, h) {
+    return database.delete(request.params.todoId);
+  },
 });
 
-app.listen(port);
+server.route({
+  method: "POST",
+  path: "/todos",
+  handler: function (request, h) {
+    return database.create({
+      id: request.payload.id,
+      title: request.payload.title,
+    });
+  },
+});
