@@ -5,6 +5,7 @@ const debug = require("debug")("application"),
   http = require("http"),
   name = "myapp";
 const Database = require("./Database");
+const db = require("./db");
 
 const currentDir = path.resolve();
 
@@ -60,16 +61,20 @@ server.register({
 server.route({
   method: "GET",
   path: "/todos",
-  handler: (request, h) => {
-    return database.findAll();
+  handler: async (request, h) => {
+    const result = await db.query("SELECT * FROM todo");
+    return result.rows;
   },
 });
 
 server.route({
   method: "GET",
   path: "/todos/{todoId}",
-  handler: function (request, h) {
-    return database.findById(request.params.todoId);
+  handler: async (request, h) => {
+    const result = await db.query("SELECT * FROM todo where id = $1", [
+      request.params.todoId,
+    ]);
+    return result.rows;
   },
 });
 
@@ -80,27 +85,34 @@ server.route({
     const todoId = request.params.todoId;
     const text = request.payload.text;
 
-    const result = database.update(todoId, text);
+    const result = await db.query(
+      "UPDATE todo set id = $1, title = $2 RETURNING *",
+      [todoId, text]
+    );
 
-    return result;
+    return result.rows;
   },
 });
 
 server.route({
   method: "DELETE",
   path: "/todos/{todoId}",
-  handler: function (request, h) {
-    return database.delete(request.params.todoId);
+  handler: async (request, h) => {
+    const result = await db.query("DELETE FROM todo where id = $1", [
+      request.params.todoId,
+    ]);
+    return result.rows;
   },
 });
 
 server.route({
   method: "POST",
   path: "/todos",
-  handler: function (request, h) {
-    return database.create({
-      id: request.payload.id,
-      title: request.payload.title,
-    });
+  handler: async (request, h) => {
+    const result = await db.query(
+      "INSERT INTO todo (id, title) values ($1, $2) RETURNING *",
+      [request.payload.id, request.payload.title]
+    );
+    return result.rows;
   },
 });
