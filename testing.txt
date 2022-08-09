@@ -1,0 +1,8 @@
+Unit Tests;
+E2E tests;
+Integration test;
+Piramida testirovaniya;
+Jest;
+Super test;
+Testing;
+Jest Snapshot;

@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --signal SIGINT --inspect index.js",
-    "windowsDebug": "@powershell $env:DEBUG='application,-express:router*' ; node index.js"
+    "dev": "nodemon --signal SIGINT --inspect server.js",
+    "windowsDebug": "@powershell $env:DEBUG='application,-express:router*' ; node server.js"
   },
   "author": "",
   "license": "ISC",
