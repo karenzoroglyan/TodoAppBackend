@@ -8,19 +8,23 @@ const {
   deleteTodo,
 } = require("./routes/routes");
 
-const server = Hapi.server({
-  port: 3000,
-  host: "localhost",
-});
+const initServer = () => {
+  const server = Hapi.server({
+    port: 3000,
+    host: "localhost",
+  });
 
-getTodos(server);
-getTodosById(server);
-updateTodoById(server);
-createTodo(server);
-deleteTodo(server);
+  getTodos(server);
+  getTodosById(server);
+  updateTodoById(server);
+  createTodo(server);
+  deleteTodo(server);
 
-server.start();
+  // server.register({
+  //   plugin: LoggerPlugin,
+  // });
 
-server.register({
-  plugin: LoggerPlugin,
-});
+  return server
+};
+
+module.exports = initServer
