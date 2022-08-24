@@ -5,6 +5,7 @@ const sequelize = new Sequelize("todos", "postgres", "8899", {
   host: "localhost",
 });
 
+
 try {
   sequelize.authenticate();
   console.log("Connection has been established successfully.");

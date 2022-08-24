@@ -1,11 +1,12 @@
 const Hapi = require("@hapi/hapi");
-const LoggerPlugin = require("./plugins/LoggerPlugin");
+
 const {
   getTodos,
   getTodosById,
-  updateTodoById,
   createTodo,
+  updateTodoById,
   deleteTodo,
+  createUser,
 } = require("./routes/routes");
 
 const initServer = () => {
@@ -14,17 +15,14 @@ const initServer = () => {
     host: "localhost",
   });
 
+  createUser(server);
   getTodos(server);
   getTodosById(server);
-  updateTodoById(server);
   createTodo(server);
+  updateTodoById(server);
   deleteTodo(server);
 
-  // server.register({
-  //   plugin: LoggerPlugin,
-  // });
-
-  return server
+  return server;
 };
 
-module.exports = initServer
+module.exports = initServer;

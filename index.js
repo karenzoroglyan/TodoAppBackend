@@ -1,5 +1,14 @@
-const initServer = require('./server')
+const initServer = require("./server");
+const LoggerPlugin = require("./plugins/LoggerPlugin");
 
-const server = initServer()
+const server = initServer();
 
-server.start()
+const init = async () => {
+  await server.register({
+    plugin: LoggerPlugin,
+  });
+
+  await server.start();
+};
+
+init();
